@@ -16,6 +16,8 @@ from models.schemas import (
     RoutingResult,
     StageAuditLogSchema,
     AgentResponse,
+    MultiDocumentVerificationResult,
+    CrossDocumentConsistency,
 )
 from agents.ingestion import IngestionAgent
 from agents.classifier import ClassifierAgent
@@ -24,6 +26,7 @@ from agents.validator import ValidatorAgent
 from agents.masker import MaskerAgent
 from agents.router import RoutingAgent
 from agents.aggregator import AggregatorAgent
+from agents.cross_validator import CrossValidatorAgent
 from database.crud import (
     save_verification_record,
     get_verification_record,
@@ -59,6 +62,7 @@ class OrchestratorAgent:
         self.masker_agent = MaskerAgent()
         self.routing_agent = RoutingAgent()
         self.aggregator_agent = AggregatorAgent()
+        self.cross_validator = CrossValidatorAgent()
 
     async def process_document(
         self,
@@ -347,6 +351,49 @@ class OrchestratorAgent:
         except Exception as e:
             logger.error(f"Failed to persist verification record to SQLite: {e}")
 
+    async def process_multiple_documents(
+        self,
+        files: Optional[List[UploadFile]] = None,
+        samples: Optional[List[Dict[str, str]]] = None,
+    ) -> MultiDocumentVerificationResult:
+        """
+        Executes multi-document verification for Loan KYC identity reconciliation.
+        Processes each document through the end-to-end pipeline, then runs cross-document
+        validation (Name matching, DOB matching, identity discrepancy flags).
+        """
+        batch_id = f"batch_{time.strftime('%Y%m%d')}_{uuid.uuid4().hex[:8]}"
+        start_time = time.perf_counter()
+        doc_results: List[ProcessingResult] = []
+
+        if files:
+            for file in files:
+                res = await self.process_document(file=file)
+                doc_results.append(res)
+        elif samples:
+            for sample in samples:
+                res = await self.process_document(
+                    raw_text_override=sample.get("text"),
+                    filename_override=sample.get("name"),
+                )
+                doc_results.append(res)
+
+        # Cross-document consistency evaluation
+        consistency, overall_status, overall_reasons, cross_match_score = (
+            self.cross_validator.evaluate_cross_consistency(doc_results)
+        )
+
+        total_time_ms = round((time.perf_counter() - start_time) * 1000, 2)
+
+        return MultiDocumentVerificationResult(
+            batch_id=batch_id,
+            overall_routing_status=overall_status,
+            cross_match_score=cross_match_score,
+            overall_reasons=overall_reasons,
+            cross_consistency=consistency,
+            documents=doc_results,
+            total_processing_time_ms=total_time_ms,
+        )
+
 
 # Global orchestrator instance
 orchestrator = OrchestratorAgent()
@@ -426,6 +473,71 @@ async def process_sample_document(sample_key: str) -> ProcessingResult:
         raw_text_override=sample["text"],
         filename_override=sample["name"],
     )
+
+
+@router.post("/verify-multiple", response_model=MultiDocumentVerificationResult)
+async def verify_multiple_documents(
+    files: List[UploadFile] = File(..., description="2 or more identity documents (e.g. Primary ID: PAN + Secondary ID: Aadhaar)"),
+) -> MultiDocumentVerificationResult:
+    """
+    Multi-document Loan KYC verification pipeline:
+    Verifies each document individually, then cross-reconciles identity fields
+    (Name similarity %, DOB matching, discrepancy detection) for automated loan auto-approval.
+    """
+    if not files or len(files) == 0:
+        raise HTTPException(status_code=400, detail="At least one document must be uploaded.")
+
+    return await orchestrator.process_multiple_documents(files=files)
+
+
+@router.post("/sample-multi/{sample_key}", response_model=MultiDocumentVerificationResult)
+async def process_sample_multi_documents(sample_key: str) -> MultiDocumentVerificationResult:
+    """
+    Interactive 1-click Loan KYC Multi-Document Presets:
+    - loan_pass: Matching PAN + Aadhaar (Auto-Pass with 100% Identity Match)
+    - loan_review: PAN ("Shriyansh Gupta") + Aadhaar ("S Gupta") (Manual Review due to name abbreviation)
+    - loan_fail: Conflicting identities / mismatched PAN and Aadhaar records (Auto-Fail)
+    """
+    combos = {
+        "loan_pass": [
+            {
+                "name": "primary_pan_card.jpg",
+                "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: RAJESH GUPTA\nDate of Birth: 1998-05-14",
+            },
+            {
+                "name": "secondary_aadhaar_card.pdf",
+                "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nShriyansh Gupta\nDOB: 1998-05-14\nGender: Male / पुरुष\n\nAddress: 42 Silicon Enclave, Indiranagar, Bengaluru, Karnataka 560038\n\n9841 2356 7195\nमेरा आधार, मेरी पहचान",
+            },
+        ],
+        "loan_review": [
+            {
+                "name": "primary_pan_card.jpg",
+                "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: RAJESH GUPTA\nDate of Birth: 1998-05-14",
+            },
+            {
+                "name": "secondary_aadhaar_initials.pdf",
+                "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nS GUPTA\nDOB: 1998-05-14\nGender: Male / पुरुष\n\nAddress: 42 Silicon Enclave, Indiranagar, Bengaluru, Karnataka 560038\n\n9841 2356 7195\nमेरा आधार, मेरी पहचान",
+            },
+        ],
+        "loan_fail": [
+            {
+                "name": "primary_pan_card.jpg",
+                "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: RAJESH GUPTA\nDate of Birth: 1998-05-14",
+            },
+            {
+                "name": "mismatched_aadhaar_card.pdf",
+                "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nAMIT KUMAR SHARMA\nDOB: 1992-11-20\nGender: Male / पुरुष\n\nAddress: 104 Sector 18, Noida, Uttar Pradesh 201301\n\n9841 2356 7195\nमेरा आधार, मेरी पहचान",
+            },
+        ],
+    }
+
+    if sample_key not in combos:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Multi-document preset '{sample_key}' not found. Available: {', '.join(combos.keys())}",
+        )
+
+    return await orchestrator.process_multiple_documents(samples=combos[sample_key])
 
 
 @router.get("/records")

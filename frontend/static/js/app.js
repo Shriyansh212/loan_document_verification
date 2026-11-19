@@ -5,9 +5,11 @@
 
 class KYCStudio {
     constructor() {
-        this.selectedFile = null;
+        this.selectedFiles = [];
+        this.ingestionMode = 'multi';
         this.processing = false;
         this.lastResult = null;
+        this.activeDocIndex = 0;
         this.currentTab = 'fields';
 
         this.dropZone = document.getElementById('drop-zone');
@@ -25,8 +27,8 @@ class KYCStudio {
     initEventListeners() {
         if (this.fileInput) {
             this.fileInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    this.handleFileSelect(e.target.files[0]);
+                if (e.target.files && e.target.files.length > 0) {
+                    this.handleFilesSelect(Array.from(e.target.files));
                 }
             });
         }
@@ -42,16 +44,41 @@ class KYCStudio {
         // Global functions exposed to window
         window.processDocument = () => this.processDocument();
         window.runSample = (key) => this.runSample(key);
-        window.clearFile = () => this.clearFile();
+        window.runMultiSample = (key) => this.runMultiSample(key);
+        window.setIngestionMode = (mode) => this.setIngestionMode(mode);
+        window.clearFile = () => this.clearAllFiles();
+        window.clearAllFiles = () => this.clearAllFiles();
+        window.removeFileAt = (index) => this.removeFileAt(index);
         window.resetForm = () => this.resetForm();
         window.copyLastResult = () => this.copyLastResult();
         window.downloadLastResult = () => this.downloadLastResult();
         window.switchResultTab = (tab) => this.switchResultTab(tab);
+        window.switchActiveDoc = (idx) => this.switchActiveDoc(idx);
         window.loadRecords = () => this.loadRecords();
         window.viewRecordDetails = (id) => this.viewRecordDetails(id);
 
         // Clipboard paste image support
         document.addEventListener('paste', (e) => this.onPaste(e));
+    }
+
+    setIngestionMode(mode) {
+        this.ingestionMode = mode;
+        const btnMulti = document.getElementById('mode-multi-btn');
+        const btnSingle = document.getElementById('mode-single-btn');
+        const titleEl = document.getElementById('drop-zone-title');
+        const hintEl = document.getElementById('drop-zone-hint');
+
+        if (mode === 'multi') {
+            btnMulti?.classList.add('mode-btn--active');
+            btnSingle?.classList.remove('mode-btn--active');
+            if (titleEl) titleEl.textContent = 'Drag & drop your KYC documents (Select 2 or more)';
+            if (hintEl) hintEl.textContent = 'Upload Primary ID (PAN) + Secondary ID (Aadhaar / Passport / DL) for cross-matching';
+        } else {
+            btnSingle?.classList.add('mode-btn--active');
+            btnMulti?.classList.remove('mode-btn--active');
+            if (titleEl) titleEl.textContent = 'Drag & drop single KYC document';
+            if (hintEl) hintEl.textContent = 'Upload 1 document (PDF, PNG, JPG, or TIFF)';
+        }
     }
 
     setupDropZone() {
@@ -79,12 +106,16 @@ class KYCStudio {
         this.dropZone.addEventListener('drop', (e) => {
             const files = e.dataTransfer?.files;
             if (files && files.length > 0) {
-                this.handleFileSelect(files[0]);
+                this.handleFilesSelect(Array.from(files));
             }
         });
 
-        this.dropZone.addEventListener('click', () => {
-            if (!this.selectedFile) {
+        this.dropZone.addEventListener('click', (e) => {
+            // Only trigger file picker if not clicking on remove buttons or list items
+            if (e.target.closest('.btn-clear-all') || e.target.closest('.btn-remove-single-file')) {
+                return;
+            }
+            if (this.selectedFiles.length === 0) {
                 this.fileInput.click();
             }
         });
@@ -94,64 +125,113 @@ class KYCStudio {
         const items = e.clipboardData?.items;
         if (!items) return;
 
+        const pastedFiles = [];
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
             if (item.kind === 'file') {
                 const file = item.getAsFile();
                 if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
-                    e.preventDefault();
-                    this.handleFileSelect(file);
-                    this.showToast('Document pasted from clipboard');
-                    break;
+                    pastedFiles.push(file);
                 }
             }
         }
+        if (pastedFiles.length > 0) {
+            e.preventDefault();
+            this.handleFilesSelect(pastedFiles);
+            this.showToast(`${pastedFiles.length} document(s) pasted from clipboard`);
+        }
     }
 
-    handleFileSelect(file) {
+    handleFilesSelect(files) {
         const validExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.tiff', '.tif'];
-        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        const validFiles = [];
 
-        if (!validExtensions.includes(ext) && !file.type.startsWith('image/')) {
-            this.showToast('Please upload a PDF or image file (PNG, JPG, TIFF).');
-            return;
+        for (const file of files) {
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            if (!validExtensions.includes(ext) && !file.type.startsWith('image/')) {
+                this.showToast(`Skipped ${file.name}: unsupported format.`);
+                continue;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                this.showToast(`Skipped ${file.name}: exceeds 10 MB limit.`);
+                continue;
+            }
+            validFiles.push(file);
         }
 
-        if (file.size > 10 * 1024 * 1024) {
-            this.showToast('File size exceeds 10 MB limit.');
-            return;
+        if (this.ingestionMode === 'single') {
+            this.selectedFiles = validFiles.slice(0, 1);
+        } else {
+            this.selectedFiles = [...this.selectedFiles, ...validFiles].slice(0, 5);
         }
 
-        this.selectedFile = file;
+        this.renderFilePreviews();
+    }
 
-        // Update preview
-        const preview = document.getElementById('file-preview');
-        const nameEl = document.getElementById('file-name');
-        const sizeEl = document.getElementById('file-size');
+    removeFileAt(index) {
+        if (index >= 0 && index < this.selectedFiles.length) {
+            this.selectedFiles.splice(index, 1);
+            this.renderFilePreviews();
+        }
+    }
+
+    clearAllFiles() {
+        this.selectedFiles = [];
+        if (this.fileInput) this.fileInput.value = '';
+        this.renderFilePreviews();
+    }
+
+    renderFilePreviews() {
+        const container = document.getElementById('file-previews-container');
+        const list = document.getElementById('file-previews-list');
+        const countLabel = document.getElementById('preview-count-label');
         const dropContent = this.dropZone.querySelector('.drop-zone-content');
 
-        if (preview && nameEl && sizeEl) {
-            nameEl.textContent = file.name;
-            sizeEl.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
-            preview.classList.remove('hidden');
-            if (dropContent) dropContent.classList.add('hidden');
+        if (!container || !list) return;
+
+        if (this.selectedFiles.length === 0) {
+            container.classList.add('hidden');
+            if (dropContent) dropContent.classList.remove('hidden');
+            if (this.btnProcess) this.btnProcess.disabled = true;
+            return;
         }
+
+        if (dropContent) dropContent.classList.add('hidden');
+        container.classList.remove('hidden');
+
+        if (countLabel) {
+            countLabel.textContent = `${this.selectedFiles.length} Document${this.selectedFiles.length > 1 ? 's' : ''} Attached`;
+        }
+
+        list.innerHTML = '';
+        this.selectedFiles.forEach((file, idx) => {
+            const isFirst = idx === 0;
+            const isSecond = idx === 1;
+            const roleBadge = isFirst
+                ? 'Primary ID (e.g. PAN)'
+                : (isSecond ? 'Secondary ID (e.g. Aadhaar)' : `Doc ${idx + 1}`);
+
+            const card = document.createElement('div');
+            card.className = 'file-card-item';
+            card.innerHTML = `
+                <div class="file-card-left">
+                    <span class="doc-role-badge">${roleBadge}</span>
+                    <i class="fas ${file.name.endsWith('.pdf') ? 'fa-file-pdf text-danger' : 'fa-file-image text-accent'}"></i>
+                    <div class="file-card-info">
+                        <div class="file-card-name" title="${file.name}">${file.name}</div>
+                        <div class="file-card-size">${(file.size / (1024 * 1024)).toFixed(2)} MB</div>
+                    </div>
+                </div>
+                <button type="button" class="btn-remove-single-file" onclick="removeFileAt(${idx})" title="Remove document">
+                    <i class="fas fa-trash-can"></i>
+                </button>
+            `;
+            list.appendChild(card);
+        });
 
         if (this.btnProcess) {
             this.btnProcess.disabled = false;
         }
-    }
-
-    clearFile() {
-        this.selectedFile = null;
-        if (this.fileInput) this.fileInput.value = '';
-
-        const preview = document.getElementById('file-preview');
-        const dropContent = this.dropZone.querySelector('.drop-zone-content');
-
-        if (preview) preview.classList.add('hidden');
-        if (dropContent) dropContent.classList.remove('hidden');
-        if (this.btnProcess) this.btnProcess.disabled = true;
     }
 
     resetForm() {
@@ -224,19 +304,30 @@ class KYCStudio {
     }
 
     async processDocument() {
-        if (!this.selectedFile || this.processing) return;
+        if (this.selectedFiles.length === 0 || this.processing) return;
 
         this.setProcessingState(true);
         this.animatePipelineNodes();
 
-        const formData = new FormData();
-        formData.append('file', this.selectedFile);
-
         try {
-            const response = await fetch('/api/v1/kyc/process', {
-                method: 'POST',
-                body: formData,
-            });
+            let response;
+            if (this.selectedFiles.length === 1) {
+                const formData = new FormData();
+                formData.append('file', this.selectedFiles[0]);
+                response = await fetch('/api/v1/kyc/process', {
+                    method: 'POST',
+                    body: formData,
+                });
+            } else {
+                const formData = new FormData();
+                this.selectedFiles.forEach((file) => {
+                    formData.append('files', file);
+                });
+                response = await fetch('/api/v1/kyc/verify-multiple', {
+                    method: 'POST',
+                    body: formData,
+                });
+            }
 
             if (!response.ok) {
                 const errData = await response.json();
@@ -280,9 +371,43 @@ class KYCStudio {
         }
     }
 
+    async runMultiSample(sampleKey) {
+        if (this.processing) return;
+
+        this.setProcessingState(true);
+        this.animatePipelineNodes();
+
+        try {
+            const response = await fetch(`/api/v1/kyc/sample-multi/${sampleKey}`, {
+                method: 'POST',
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.detail || 'Multi-document sample verification failed.');
+            }
+
+            const result = await response.json();
+            this.handleProcessingSuccess(result);
+            this.showToast(`Verified loan KYC combo: ${sampleKey}`);
+        } catch (err) {
+            console.error(err);
+            this.showToast(`Error: ${err.message}`);
+        } finally {
+            this.setProcessingState(false);
+        }
+    }
+
     handleProcessingSuccess(result) {
         this.lastResult = result;
-        this.finalizePipelineNodes(result.audit_trail);
+
+        // If multi-doc, aggregate audit trails for nodes
+        if (result.batch_id && result.documents && result.documents.length > 0) {
+            this.finalizePipelineNodes(result.documents[0].audit_trail);
+        } else {
+            this.finalizePipelineNodes(result.audit_trail);
+        }
+
         this.renderResults(result);
         this.loadStats();
         this.loadRecords();
@@ -297,56 +422,191 @@ class KYCStudio {
         if (emptyState) emptyState.classList.add('hidden');
         if (contentState) contentState.classList.remove('hidden');
 
-        // Meta sub
         const metaSub = document.getElementById('res-meta-sub');
-        if (metaSub) {
-            metaSub.textContent = `ID: ${result.verification_id} · Latency: ${result.processing_time_ms}ms`;
-        }
-
-        // Routing verdict banner
         const banner = document.getElementById('routing-verdict-banner');
         const badge = document.getElementById('routing-status-badge');
         const docType = document.getElementById('routing-doc-type');
         const confNum = document.getElementById('routing-confidence');
         const reasonsList = document.getElementById('routing-reasons-list');
+        const crossCard = document.getElementById('cross-document-card');
+        const multiDocNav = document.getElementById('multi-doc-nav');
 
-        const status = result.routing_status || 'MANUAL_REVIEW';
-        if (banner) {
-            banner.className = `verdict-banner verdict-${status === 'PASS' ? 'pass' : (status === 'FAIL' ? 'fail' : 'warn')}`;
-        }
-        if (badge) badge.textContent = status;
-        if (docType) {
-            docType.textContent = result.document_type ? result.document_type.replace('_', ' ').toUpperCase() : 'UNKNOWN ID';
-        }
-        if (confNum) confNum.textContent = `${Math.round(result.confidence * 100)}%`;
+        const isMulti = Boolean(result.batch_id && result.documents);
 
-        if (reasonsList) {
-            reasonsList.innerHTML = '';
-            const reasons = result.routing_reasons && result.routing_reasons.length > 0
-                ? result.routing_reasons
-                : ['All policy and security rules processed.'];
-            reasons.forEach((r) => {
-                const li = document.createElement('li');
-                li.textContent = r;
-                reasonsList.appendChild(li);
-            });
+        if (isMulti) {
+            // Multi-document Loan KYC Result
+            if (metaSub) {
+                metaSub.textContent = `Batch ID: ${result.batch_id} · Latency: ${result.total_processing_time_ms}ms · Documents: ${result.documents.length}`;
+            }
+
+            const status = result.overall_routing_status || 'MANUAL_REVIEW';
+            if (banner) {
+                banner.className = `verdict-banner verdict-${status === 'PASS' ? 'pass' : (status === 'FAIL' ? 'fail' : 'warn')}`;
+            }
+            if (badge) badge.textContent = status;
+            if (docType) docType.textContent = `LOAN KYC RECONCILIATION (${result.documents.length} DOCS)`;
+            if (confNum) confNum.textContent = `${Math.round((result.cross_match_score || 1) * 100)}%`;
+
+            if (reasonsList) {
+                reasonsList.innerHTML = '';
+                (result.overall_reasons || []).forEach((r) => {
+                    const li = document.createElement('li');
+                    li.textContent = r;
+                    reasonsList.appendChild(li);
+                });
+            }
+
+            // Cross Document Reconciliation Card
+            if (crossCard) {
+                crossCard.classList.remove('hidden');
+                const crossBadge = document.getElementById('cross-score-badge');
+                const crossTableBody = document.getElementById('cross-table-body');
+
+                const cross = result.cross_consistency || {};
+                const score = Math.round((result.cross_match_score || 1) * 100);
+
+                if (crossBadge) {
+                    crossBadge.textContent = `${score}% Match Score`;
+                    crossBadge.className = `cross-score-pill ${score >= 85 ? '' : (score >= 60 ? 'cross-score-pill--warn' : 'cross-score-pill--fail')}`;
+                }
+
+                if (crossTableBody) {
+                    crossTableBody.innerHTML = '';
+
+                    // Name Row
+                    const nameSim = Math.round((cross.name_similarity || 1) * 100);
+                    let nameBadgeClass = 'cross-status-badge--match';
+                    let nameBadgeText = `MATCH (${nameSim}%)`;
+                    if (nameSim < 70) {
+                        nameBadgeClass = 'cross-status-badge--mismatch';
+                        nameBadgeText = `CONFLICT (${nameSim}%)`;
+                    } else if (nameSim < 85) {
+                        nameBadgeClass = 'cross-status-badge--partial';
+                        nameBadgeText = `ABBREVIATION (${nameSim}%)`;
+                    }
+
+                    const trName = document.createElement('tr');
+                    trName.innerHTML = `
+                        <td><strong>Applicant Name</strong></td>
+                        <td>${cross.name_doc1 || 'N/A'}</td>
+                        <td>${cross.name_doc2 || 'N/A'}</td>
+                        <td><span class="cross-status-badge ${nameBadgeClass}"><i class="fas ${cross.name_match ? 'fa-check' : 'fa-triangle-exclamation'}"></i> ${nameBadgeText}</span></td>
+                    `;
+                    crossTableBody.appendChild(trName);
+
+                    // DOB Row
+                    const dobMatch = cross.dob_match;
+                    const dobBadgeClass = dobMatch ? 'cross-status-badge--match' : 'cross-status-badge--mismatch';
+                    const dobBadgeText = dobMatch ? 'VERIFIED MATCH' : 'DOB MISMATCH';
+
+                    const trDob = document.createElement('tr');
+                    trDob.innerHTML = `
+                        <td><strong>Date of Birth (DOB)</strong></td>
+                        <td>${cross.dob_doc1 || 'N/A'}</td>
+                        <td>${cross.dob_doc2 || 'N/A'}</td>
+                        <td><span class="cross-status-badge ${dobBadgeClass}"><i class="fas ${dobMatch ? 'fa-check' : 'fa-xmark'}"></i> ${dobBadgeText}</span></td>
+                    `;
+                    crossTableBody.appendChild(trDob);
+                }
+            }
+
+            // Setup document tabs
+            if (multiDocNav) {
+                multiDocNav.classList.remove('hidden');
+                const btnContainer = document.getElementById('doc-nav-buttons');
+                if (btnContainer) {
+                    btnContainer.innerHTML = '';
+                    result.documents.forEach((doc, idx) => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = `doc-nav-btn ${idx === 0 ? 'doc-nav-btn--active' : ''}`;
+                        btn.id = `doc-nav-btn-${idx}`;
+                        const docLabel = doc.document_type ? doc.document_type.toUpperCase() : `DOC ${idx + 1}`;
+                        btn.innerHTML = `<i class="fas ${doc.routing_status === 'PASS' ? 'fa-check text-success' : 'fa-triangle-exclamation text-warning'}"></i> Doc ${idx + 1}: ${docLabel} (${doc.routing_status})`;
+                        btn.onclick = () => this.switchActiveDoc(idx);
+                        btnContainer.appendChild(btn);
+                    });
+                }
+            }
+
+            this.activeDocIndex = 0;
+            this.renderSingleDocDetails(result.documents[0]);
+
+        } else {
+            // Single Document Result
+            if (crossCard) crossCard.classList.add('hidden');
+            if (multiDocNav) multiDocNav.classList.add('hidden');
+
+            if (metaSub) {
+                metaSub.textContent = `ID: ${result.verification_id} · Latency: ${result.processing_time_ms}ms`;
+            }
+
+            const status = result.routing_status || 'MANUAL_REVIEW';
+            if (banner) {
+                banner.className = `verdict-banner verdict-${status === 'PASS' ? 'pass' : (status === 'FAIL' ? 'fail' : 'warn')}`;
+            }
+            if (badge) badge.textContent = status;
+            if (docType) {
+                docType.textContent = result.document_type ? result.document_type.replace('_', ' ').toUpperCase() : 'UNKNOWN ID';
+            }
+            if (confNum) confNum.textContent = `${Math.round(result.confidence * 100)}%`;
+
+            if (reasonsList) {
+                reasonsList.innerHTML = '';
+                const reasons = result.routing_reasons && result.routing_reasons.length > 0
+                    ? result.routing_reasons
+                    : ['All policy and security rules processed.'];
+                reasons.forEach((r) => {
+                    const li = document.createElement('li');
+                    li.textContent = r;
+                    reasonsList.appendChild(li);
+                });
+            }
+
+            this.renderSingleDocDetails(result);
         }
 
-        // Aadhaar security masking banner
+        // Render Raw JSON
+        const rawJsonEl = document.getElementById('raw-json-code');
+        if (rawJsonEl) {
+            rawJsonEl.textContent = JSON.stringify(result, null, 2);
+        }
+    }
+
+    switchActiveDoc(idx) {
+        if (!this.lastResult || !this.lastResult.documents || !this.lastResult.documents[idx]) return;
+        this.activeDocIndex = idx;
+
+        // Update active nav button
+        document.querySelectorAll('.doc-nav-btn').forEach((btn, i) => {
+            if (i === idx) {
+                btn.classList.add('doc-nav-btn--active');
+            } else {
+                btn.classList.remove('doc-nav-btn--active');
+            }
+        });
+
+        this.renderSingleDocDetails(this.lastResult.documents[idx]);
+    }
+
+    renderSingleDocDetails(doc) {
+        if (!doc) return;
+
+        // Aadhaar security masking notice
         const maskNotice = document.getElementById('masked-security-notice');
         if (maskNotice) {
-            if (result.masked || (result.document_type === 'aadhaar')) {
+            if (doc.masked || doc.document_type === 'aadhaar') {
                 maskNotice.classList.remove('hidden');
             } else {
                 maskNotice.classList.add('hidden');
             }
         }
 
-        // Render Fields
+        // Render Extracted Fields
         const fieldsGrid = document.getElementById('fields-grid');
         const fieldsCount = document.getElementById('fields-count');
-        const fields = result.fields || {};
-        const scores = result.field_level_scores || {};
+        const fields = doc.fields || {};
+        const scores = doc.field_level_scores || {};
         const fieldEntries = Object.entries(fields);
 
         if (fieldsCount) fieldsCount.textContent = fieldEntries.length;
@@ -377,7 +637,7 @@ class KYCStudio {
         // Render Audit Timeline
         const auditTimeline = document.getElementById('audit-timeline');
         const auditCount = document.getElementById('audit-count');
-        const auditLogs = result.audit_trail || [];
+        const auditLogs = doc.audit_trail || [];
 
         if (auditCount) auditCount.textContent = auditLogs.length;
         if (auditTimeline) {
@@ -396,12 +656,6 @@ class KYCStudio {
                 `;
                 auditTimeline.appendChild(item);
             });
-        }
-
-        // Render Raw JSON
-        const rawJsonEl = document.getElementById('raw-json-code');
-        if (rawJsonEl) {
-            rawJsonEl.textContent = JSON.stringify(result, null, 2);
         }
     }
 

@@ -136,54 +136,87 @@
         <section class="samples-preset-bar glass-panel" id="studio">
             <div class="samples-header">
                 <div>
-                    <h3 class="preset-title"><i class="fas fa-vial"></i> 1-Click Interactive Demo Presets</h3>
-                    <p class="preset-sub">Test the full pipeline instantly without uploading personal files:</p>
+                    <h3 class="preset-title"><i class="fas fa-vial"></i> 1-Click Interactive KYC Presets</h3>
+                    <p class="preset-sub">Test single-doc extraction or multi-doc loan identity reconciliation instantly:</p>
                 </div>
-                <span class="pill pill--live"><span class="pill__dot"></span> Instant Evaluation</span>
+                <span class="pill pill--live"><span class="pill__dot"></span> Live Pipeline Evaluation</span>
             </div>
-            <div class="samples-buttons-grid">
-                <button type="button" class="sample-btn" onclick="runSample('aadhaar_pass')">
-                    <i class="fas fa-id-card text-success"></i>
-                    <div class="sample-btn__info">
-                        <strong>Aadhaar Card</strong>
-                        <span>Auto-Pass · 8-Digit Masking</span>
-                    </div>
-                </button>
-                <button type="button" class="sample-btn" onclick="runSample('pan_pass')">
-                    <i class="fas fa-credit-card text-success"></i>
-                    <div class="sample-btn__info">
-                        <strong>PAN Card</strong>
-                        <span>Auto-Pass · Format Check</span>
-                    </div>
-                </button>
-                <button type="button" class="sample-btn" onclick="runSample('voter_pass')">
-                    <i class="fas fa-check-to-slot text-success"></i>
-                    <div class="sample-btn__info">
-                        <strong>Voter ID</strong>
-                        <span>Auto-Pass · EPIC Regex</span>
-                    </div>
-                </button>
-                <button type="button" class="sample-btn" onclick="runSample('passport_pass')">
-                    <i class="fas fa-passport text-success"></i>
-                    <div class="sample-btn__info">
-                        <strong>Passport</strong>
-                        <span>Auto-Pass · MRZ Checksums</span>
-                    </div>
-                </button>
-                <button type="button" class="sample-btn sample-btn--warn" onclick="runSample('blurry_review')">
-                    <i class="fas fa-triangle-exclamation text-warning"></i>
-                    <div class="sample-btn__info">
-                        <strong>Blurry Scan</strong>
-                        <span>Routes to MANUAL REVIEW</span>
-                    </div>
-                </button>
-                <button type="button" class="sample-btn sample-btn--danger" onclick="runSample('invalid_fail')">
-                    <i class="fas fa-circle-xmark text-danger"></i>
-                    <div class="sample-btn__info">
-                        <strong>Forged ID</strong>
-                        <span>Routes to FAIL</span>
-                    </div>
-                </button>
+
+            <!-- Loan KYC Multi-Document Presets -->
+            <div class="preset-category">
+                <span class="preset-cat-label"><i class="fas fa-arrows-split-up-and-left"></i> Multi-Document Loan KYC (Cross-Document Reconciliation)</span>
+                <div class="samples-buttons-grid">
+                    <button type="button" class="sample-btn sample-btn--highlight" onclick="runMultiSample('loan_pass')">
+                        <i class="fas fa-people-arrows text-success"></i>
+                        <div class="sample-btn__info">
+                            <strong>Loan KYC: PAN + Aadhaar</strong>
+                            <span>Auto-Pass · 100% Name & DOB Reconciled</span>
+                        </div>
+                    </button>
+                    <button type="button" class="sample-btn sample-btn--warn" onclick="runMultiSample('loan_review')">
+                        <i class="fas fa-spell-check text-warning"></i>
+                        <div class="sample-btn__info">
+                            <strong>Name Abbreviation Check</strong>
+                            <span>Manual Review · "Shriyansh Gupta" vs "S GUPTA"</span>
+                        </div>
+                    </button>
+                    <button type="button" class="sample-btn sample-btn--danger" onclick="runMultiSample('loan_fail')">
+                        <i class="fas fa-user-xmark text-danger"></i>
+                        <div class="sample-btn__info">
+                            <strong>Identity Mismatch Conflict</strong>
+                            <span>Auto-Fail · Mismatched Name & DOB Records</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Single Document Presets -->
+            <div class="preset-category mt-3">
+                <span class="preset-cat-label"><i class="fas fa-id-badge"></i> Single Document Pipelines</span>
+                <div class="samples-buttons-grid">
+                    <button type="button" class="sample-btn" onclick="runSample('aadhaar_pass')">
+                        <i class="fas fa-id-card text-success"></i>
+                        <div class="sample-btn__info">
+                            <strong>Aadhaar Card</strong>
+                            <span>Auto-Pass · 8-Digit Masking</span>
+                        </div>
+                    </button>
+                    <button type="button" class="sample-btn" onclick="runSample('pan_pass')">
+                        <i class="fas fa-credit-card text-success"></i>
+                        <div class="sample-btn__info">
+                            <strong>PAN Card</strong>
+                            <span>Auto-Pass · Format Check</span>
+                        </div>
+                    </button>
+                    <button type="button" class="sample-btn" onclick="runSample('voter_pass')">
+                        <i class="fas fa-check-to-slot text-success"></i>
+                        <div class="sample-btn__info">
+                            <strong>Voter ID</strong>
+                            <span>Auto-Pass · EPIC Regex</span>
+                        </div>
+                    </button>
+                    <button type="button" class="sample-btn" onclick="runSample('passport_pass')">
+                        <i class="fas fa-passport text-success"></i>
+                        <div class="sample-btn__info">
+                            <strong>Passport</strong>
+                            <span>Auto-Pass · MRZ Checksums</span>
+                        </div>
+                    </button>
+                    <button type="button" class="sample-btn sample-btn--warn" onclick="runSample('blurry_review')">
+                        <i class="fas fa-triangle-exclamation text-warning"></i>
+                        <div class="sample-btn__info">
+                            <strong>Blurry Scan</strong>
+                            <span>Routes to MANUAL REVIEW</span>
+                        </div>
+                    </button>
+                    <button type="button" class="sample-btn sample-btn--danger" onclick="runSample('invalid_fail')">
+                        <i class="fas fa-circle-xmark text-danger"></i>
+                        <div class="sample-btn__info">
+                            <strong>Forged ID</strong>
+                            <span>Routes to FAIL</span>
+                        </div>
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -194,35 +227,40 @@
                 <div class="panel-head">
                     <div>
                         <h2 class="panel-title">Document Ingestion</h2>
-                        <p class="panel-sub">Upload Scanned PDF, PNG, JPG, or TIFF (Max 10 MB)</p>
+                        <p class="panel-sub" id="upload-panel-sub">Upload 2 Documents for Loan KYC or 1 Document for Single Check</p>
+                    </div>
+                    <!-- Mode Switcher -->
+                    <div class="mode-switcher">
+                        <button type="button" class="mode-btn mode-btn--active" id="mode-multi-btn" onclick="setIngestionMode('multi')">
+                            <i class="fas fa-layer-group"></i> Multi-Doc (Loan KYC)
+                        </button>
+                        <button type="button" class="mode-btn" id="mode-single-btn" onclick="setIngestionMode('single')">
+                            <i class="fas fa-file"></i> Single Doc
+                        </button>
                     </div>
                 </div>
 
                 <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Upload document">
-                    <input type="file" id="file-input" class="visually-hidden" accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif">
+                    <input type="file" id="file-input" class="visually-hidden" multiple accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif">
                     <div class="drop-zone-content">
                         <div class="drop-icon-wrap">
                             <i class="fas fa-cloud-arrow-up"></i>
                         </div>
-                        <p class="drop-title">Drag & drop your KYC document</p>
-                        <p class="drop-hint">or click anywhere to browse files</p>
+                        <p class="drop-title" id="drop-zone-title">Drag & drop your KYC documents (Select 1 or more)</p>
+                        <p class="drop-hint" id="drop-zone-hint">Upload Primary ID (PAN) + Secondary ID (Aadhaar / Passport / DL)</p>
                         <button type="button" class="btn btn-primary" id="btn-browse">
-                            <i class="fas fa-folder-open"></i> Browse File
+                            <i class="fas fa-folder-open"></i> Browse Documents
                         </button>
-                        <p class="drop-foot">Tip: Click drop zone and paste screenshot directly (<kbd>Ctrl</kbd> + <kbd>V</kbd>)</p>
+                        <p class="drop-foot">Tip: You can select multiple files at once or paste screenshots (<kbd>Ctrl</kbd> + <kbd>V</kbd>)</p>
                     </div>
 
-                    <div id="file-preview" class="file-preview hidden">
-                        <div class="file-preview__row">
-                            <div class="file-thumb" id="file-thumb"><i class="fas fa-file-invoice"></i></div>
-                            <div class="file-meta">
-                                <div class="file-name" id="file-name">filename.pdf</div>
-                                <div class="file-size" id="file-size">1.2 MB</div>
-                            </div>
-                            <button type="button" class="btn-clear-file" onclick="clearFile()" title="Remove file">
-                                <i class="fas fa-times"></i>
-                            </button>
+                    <!-- Multi-File Previews Container -->
+                    <div id="file-previews-container" class="file-previews-container hidden">
+                        <div class="file-previews-header">
+                            <span class="preview-count" id="preview-count-label">0 Documents Selected</span>
+                            <button type="button" class="btn-clear-all" onclick="clearAllFiles()">Clear All</button>
                         </div>
+                        <div class="file-previews-list" id="file-previews-list"></div>
                     </div>
                 </div>
 
@@ -267,7 +305,7 @@
                 <div id="results-empty" class="results-empty">
                     <div class="empty-icon"><i class="fas fa-shield-halved"></i></div>
                     <h3>No Active Verification</h3>
-                    <p>Upload an identity document or select a 1-click preset sample above to start the multi-stage extraction pipeline.</p>
+                    <p>Upload 1 or more identity documents, or select a 1-click preset sample above to start the multi-stage extraction pipeline.</p>
                 </div>
 
                 <!-- Results Content Area (Hidden initially) -->
@@ -287,6 +325,37 @@
                         <ul class="verdict-reasons" id="routing-reasons-list">
                             <li>All integrity checksums validated successfully</li>
                         </ul>
+                    </div>
+
+                    <!-- Cross-Document Identity Reconciliation Card -->
+                    <div id="cross-document-card" class="cross-doc-card hidden">
+                        <div class="cross-doc-header">
+                            <div class="cross-doc-title">
+                                <i class="fas fa-arrows-split-up-and-left text-accent"></i>
+                                <span><strong>Cross-Document Reconciliation</strong> (Loan KYC Identity Matching)</span>
+                            </div>
+                            <span class="cross-score-pill" id="cross-score-badge">100% Match</span>
+                        </div>
+                        <div class="cross-comparison-table-wrap">
+                            <table class="cross-table">
+                                <thead>
+                                    <tr>
+                                        <th>Identity Attribute</th>
+                                        <th>Primary ID (Doc 1)</th>
+                                        <th>Secondary ID (Doc 2)</th>
+                                        <th>Cross-Match Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cross-table-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Document Selector (Shown when multi-documents are present) -->
+                    <div id="multi-doc-nav" class="multi-doc-nav hidden">
+                        <span class="doc-nav-label"><i class="fas fa-folder"></i> Inspected Documents:</span>
+                        <div class="doc-nav-buttons" id="doc-nav-buttons"></div>
                     </div>
 
                     <!-- Navigation Tabs: Fields vs Audit Trail vs Raw JSON -->

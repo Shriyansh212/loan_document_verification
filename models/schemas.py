@@ -164,3 +164,28 @@ SUPPORTED_DOCUMENT_TYPES = {
     "driving_licence": DrivingLicenceFields,
     "passport": PassportFields,
 }
+
+
+
+class CrossDocumentConsistency(BaseModel):
+    """Cross-document identity consistency validation result"""
+    name_match: bool = True
+    name_similarity: float = 1.0
+    name_doc1: Optional[str] = None
+    name_doc2: Optional[str] = None
+    dob_match: bool = True
+    dob_doc1: Optional[str] = None
+    dob_doc2: Optional[str] = None
+    cross_warnings: List[str] = Field(default_factory=list)
+    mismatch_details: List[str] = Field(default_factory=list)
+
+
+class MultiDocumentVerificationResult(BaseModel):
+    """Result for Loan KYC and multi-document verification with cross-validation"""
+    batch_id: str
+    overall_routing_status: Literal["PASS", "FAIL", "MANUAL_REVIEW"]
+    cross_match_score: float = 1.0
+    overall_reasons: List[str] = Field(default_factory=list)
+    cross_consistency: CrossDocumentConsistency = Field(default_factory=CrossDocumentConsistency)
+    documents: List[ProcessingResult] = Field(default_factory=list)
+    total_processing_time_ms: float = 0.0

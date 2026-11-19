@@ -1872,3 +1872,322 @@ kbd {
     0% { transform: scale(1); opacity: 0.8; }
     100% { transform: scale(1.05); opacity: 1; }
 }
+
+/* ==========================================================================
+   Multi-Document Loan KYC & Cross-Reconciliation Styling
+   ========================================================================== */
+
+.preset-category {
+    margin-top: 1rem;
+}
+
+.preset-cat-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.65rem;
+}
+
+.sample-btn--highlight {
+    border-color: rgba(99, 102, 241, 0.45);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.08));
+}
+
+.mode-switcher {
+    display: inline-flex;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 3px;
+}
+
+.mode-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.mode-btn:hover {
+    color: var(--text);
+}
+
+.mode-btn--active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+}
+
+/* Multi-file preview container */
+.file-previews-container {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.file-previews-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.65rem;
+    padding: 0 0.25rem;
+}
+
+.preview-count {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.btn-clear-all {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.15s;
+}
+
+.btn-clear-all:hover {
+    color: #ef4444;
+}
+
+.file-previews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.file-card-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.85rem;
+    transition: border-color 0.15s ease;
+}
+
+.file-card-item:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.file-card-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.doc-role-badge {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.18);
+    color: var(--accent-light, #a5b4fc);
+    white-space: nowrap;
+}
+
+.file-card-info {
+    min-width: 0;
+}
+
+.file-card-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.file-card-size {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.btn-remove-single-file {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.35rem;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.btn-remove-single-file:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Cross-Document Reconciliation Card */
+.cross-doc-card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(24, 28, 45, 0.8));
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.cross-doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.cross-doc-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.9rem;
+    color: #f1f5f9;
+}
+
+.cross-score-pill {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.cross-score-pill--warn {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.cross-score-pill--fail {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.cross-comparison-table-wrap {
+    overflow-x: auto;
+}
+
+.cross-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.cross-table th {
+    text-align: left;
+    padding: 0.45rem 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cross-table td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-family: var(--mono);
+    color: var(--text);
+}
+
+.cross-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+}
+
+.cross-status-badge--match {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.cross-status-badge--partial {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+.cross-status-badge--mismatch {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+/* Document Selector Tabs */
+.multi-doc-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.doc-nav-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.doc-nav-buttons {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.doc-nav-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.doc-nav-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+.doc-nav-btn--active {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--accent);
+    color: #fff;
+}
