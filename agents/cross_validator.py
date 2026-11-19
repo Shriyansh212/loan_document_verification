@@ -83,6 +83,8 @@ class CrossValidatorAgent:
         dob2 = doc2.fields.get("dob", "")
         fn1 = doc1.fields.get("fathers_name", "")
         fn2 = doc2.fields.get("fathers_name", "")
+        g1 = doc1.fields.get("gender", "")
+        g2 = doc2.fields.get("gender", "")
 
         consistency.name_doc1 = name1
         consistency.name_doc2 = name2
@@ -90,6 +92,8 @@ class CrossValidatorAgent:
         consistency.dob_doc2 = dob2
         consistency.fathers_name_doc1 = fn1
         consistency.fathers_name_doc2 = fn2
+        consistency.gender_doc1 = g1
+        consistency.gender_doc2 = g2
 
         # 1. Name cross-check
         if name1 and name2:
@@ -130,7 +134,43 @@ class CrossValidatorAgent:
                 overall_status = "FAIL"
                 match_score = min(match_score, 0.10)
 
-        # 3. Individual Document Failure Check
+        # 3. Father's Name cross-check
+        if fn1 and fn2:
+            fn_sim = compute_name_similarity(fn1, fn2)
+            if fn_sim >= 0.80:
+                reasons.append(f"Father's name verified ({fn_sim:.0%}): '{fn1}' ⟷ '{fn2}'")
+            elif fn_sim >= 0.60:
+                consistency.fathers_name_match = False
+                consistency.cross_warnings.append("fathers_name_partial_match")
+                consistency.mismatch_details.append(f"Father's name variation ({fn_sim:.0%}): '{fn1}' vs '{fn2}'")
+                reasons.append(f"Father's name variation ({fn_sim:.0%}): requires manual verification")
+                if overall_status == "PASS":
+                    overall_status = "MANUAL_REVIEW"
+                match_score = min(match_score, 0.70)
+            else:
+                consistency.fathers_name_match = False
+                consistency.cross_warnings.append("fathers_name_mismatch")
+                consistency.mismatch_details.append(f"Father's name mismatch: '{fn1}' vs '{fn2}'")
+                reasons.append(f"Critical Conflict: Father's Name on Document 1 ('{fn1}') does not match Document 2 ('{fn2}')")
+                overall_status = "FAIL"
+                match_score = min(match_score, 0.15)
+
+        # 4. Gender cross-check
+        if g1 and g2:
+            g1_clean = str(g1).strip().upper()[:1]
+            g2_clean = str(g2).strip().upper()[:1]
+            if g1_clean in {"M", "F"} and g2_clean in {"M", "F"}:
+                if g1_clean == g2_clean:
+                    reasons.append(f"Gender verified: '{g1}' matches across documents")
+                else:
+                    consistency.gender_match = False
+                    consistency.cross_warnings.append("gender_mismatch")
+                    consistency.mismatch_details.append(f"Gender conflict: '{g1}' vs '{g2}'")
+                    reasons.append(f"Identity Conflict: Gender on Document 1 ('{g1}') does not match Document 2 ('{g2}')")
+                    overall_status = "FAIL"
+                    match_score = min(match_score, 0.10)
+
+        # 5. Individual Document Failure Check
         for i, d in enumerate(docs):
             if d.routing_status == "FAIL":
                 overall_status = "FAIL"

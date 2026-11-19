@@ -177,6 +177,9 @@ class CrossDocumentConsistency(BaseModel):
     fathers_name_match: bool = True
     fathers_name_doc1: Optional[str] = None
     fathers_name_doc2: Optional[str] = None
+    gender_match: bool = True
+    gender_doc1: Optional[str] = None
+    gender_doc2: Optional[str] = None
     dob_match: bool = True
     dob_doc1: Optional[str] = None
     dob_doc2: Optional[str] = None

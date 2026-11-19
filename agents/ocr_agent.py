@@ -32,7 +32,7 @@ except ImportError:
 try:
     from rapidocr_onnxruntime import RapidOCR
     HAS_RAPID_OCR = True
-    _rapid_engine = RapidOCR()
+    _rapid_engine = RapidOCR(use_cls=True)
 except Exception:
     HAS_RAPID_OCR = False
     _rapid_engine = None
@@ -208,22 +208,47 @@ class OCRAgent:
             return image
 
     def _run_rapid_ocr(self, img_path: str) -> Optional[Dict[str, Any]]:
-        """Run RapidOCR with 0 and 270 degree rotation checks for robust card orientation."""
+        """Run RapidOCR with automatic direction classification, downscaling, and early stopping."""
         if not HAS_RAPID_OCR or _rapid_engine is None:
             return None
         try:
             pil_img = Image.open(img_path)
+            w, h = pil_img.size
+            max_dim = max(w, h)
+            if max_dim > 1200:
+                scale = 1200 / max_dim
+                pil_img = pil_img.resize((int(w * scale), int(h * scale)), Image.Resampling.LANCZOS)
+
+            KEY_WORDS = {
+                "government", "india", "unique", "identification", "aadhaar",
+                "income", "tax", "permanent", "account", "dob", "father", "male",
+                "female", "vid", "enrolment", "department"
+            }
+
+            # Prioritize standard 0 deg orientation, with 270 deg fallback for 90-deg rotated scans
+            rotations = [0, 270, 90]
             lines = []
             seen = set()
-            for rot in [0, 90, 270]:
+
+            for rot in rotations:
                 rot_img = pil_img.rotate(rot, expand=True) if rot != 0 else pil_img
                 res, _ = _rapid_engine(np.array(rot_img))
+                current_lines = []
                 if res:
                     for item in res:
                         t = item[1].strip()
                         if t and t not in seen and len(t) > 2:
                             seen.add(t)
+                            current_lines.append(t)
                             lines.append(t)
+
+                # Early-stop if document contains strong identity keywords or sufficient line count
+                lower_text = " ".join(current_lines).lower()
+                matched_kw = [k for k in KEY_WORDS if k in lower_text]
+                if len(matched_kw) >= 2 or len(current_lines) >= 10:
+                    logger.info(f"RapidOCR early-stop on rot={rot}° with {len(current_lines)} lines ({len(matched_kw)} keywords matched)")
+                    break
+
             if lines:
                 full_text = "\n".join(lines)
                 logger.info(f"RapidOCR extracted {len(lines)} lines from {img_path}")

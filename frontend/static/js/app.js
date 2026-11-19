@@ -512,18 +512,36 @@ class KYCStudio {
                     if (cross.fathers_name_doc1 || cross.fathers_name_doc2) {
                         const fn1 = cross.fathers_name_doc1 || 'N/A';
                         const fn2 = cross.fathers_name_doc2 || 'N/A';
-                        const fnMatch = cross.fathers_name_match !== false;
-                        const fnBadgeClass = fnMatch ? 'cross-status-badge--match' : 'cross-status-badge--partial';
-                        const fnBadgeText = fnMatch ? 'MATCH' : 'REQUIRES REVIEW';
+                        const fnMatch = cross.fathers_name_match === true;
+                        const fnBadgeClass = fnMatch ? 'cross-status-badge--match' : 'cross-status-badge--mismatch';
+                        const fnBadgeText = fnMatch ? 'VERIFIED MATCH' : 'FATHER MISMATCH';
 
                         const trFn = document.createElement('tr');
                         trFn.innerHTML = `
                             <td><strong>Father's Name</strong></td>
                             <td>${fn1}</td>
                             <td>${fn2}</td>
-                            <td><span class="cross-status-badge ${fnBadgeClass}"><i class="fas ${fnMatch ? 'fa-check' : 'fa-info-circle'}"></i> ${fnBadgeText}</span></td>
+                            <td><span class="cross-status-badge ${fnBadgeClass}"><i class="fas ${fnMatch ? 'fa-check' : 'fa-xmark'}"></i> ${fnBadgeText}</span></td>
                         `;
                         crossTableBody.appendChild(trFn);
+                    }
+
+                    // Gender Row
+                    if (cross.gender_doc1 || cross.gender_doc2) {
+                        const g1 = cross.gender_doc1 || 'N/A';
+                        const g2 = cross.gender_doc2 || 'N/A';
+                        const gMatch = cross.gender_match === true;
+                        const gBadgeClass = gMatch ? 'cross-status-badge--match' : 'cross-status-badge--mismatch';
+                        const gBadgeText = gMatch ? 'VERIFIED MATCH' : 'GENDER CONFLICT';
+
+                        const trG = document.createElement('tr');
+                        trG.innerHTML = `
+                            <td><strong>Gender</strong></td>
+                            <td>${g1}</td>
+                            <td>${g2}</td>
+                            <td><span class="cross-status-badge ${gBadgeClass}"><i class="fas ${gMatch ? 'fa-check' : 'fa-xmark'}"></i> ${gBadgeText}</span></td>
+                        `;
+                        crossTableBody.appendChild(trG);
                     }
                 }
             }
