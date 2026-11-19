@@ -99,8 +99,8 @@ The automated routing engine evaluates validation checks, confidence thresholds,
 ### 2. Local Setup
 ```bash
 # Clone the repository
-git clone https://github.com/Shriyansh212/document-verification-pipeline.git
-cd document-verification-pipeline
+git clone https://github.com/Shriyansh212/loan_document_verification.git
+cd loan_document_verification
 
 # Create virtual environment
 python -m venv venv

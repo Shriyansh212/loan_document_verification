@@ -10,12 +10,12 @@ This guide outlines multiple zero-cost options to deploy the **Document Verifica
 
 ### Steps:
 1. **Push your repository to GitHub**:
-   Ensure this project is pushed to your GitHub repository (e.g., `https://github.com/Shriyansh212/document-verification-pipeline`).
+   Ensure this project is pushed to your GitHub repository (e.g., `https://github.com/Shriyansh212/loan_document_verification`).
 
 2. **Deploy via Render Blueprint**:
    - Log in to your Render account at [dashboard.render.com](https://dashboard.render.com/).
    - Click **New +** > **Blueprint**.
-   - Connect your GitHub repository `document-verification-pipeline`.
+   - Connect your GitHub repository `loan_document_verification`.
    - Render will detect `render.yaml` automatically.
    - Click **Apply**.
 
@@ -26,7 +26,7 @@ This guide outlines multiple zero-cost options to deploy the **Document Verifica
 4. **Your Live Demo URL**:
    Render will deploy your app at:
    ```
-   https://document-verification-pipeline.onrender.com
+   https://loan-document-verification.onrender.com
    ```
    Add this link directly to your resume under **Live Demo**!
 
