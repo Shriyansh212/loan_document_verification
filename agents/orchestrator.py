@@ -438,23 +438,23 @@ async def process_sample_document(sample_key: str) -> ProcessingResult:
     samples = {
         "aadhaar_pass": {
             "name": "sample_aadhaar_clean.png",
-            "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nShriyansh Gupta\nDOB: 1998-05-14\nGender: Male / पुरुष\n\nAddress: 42 Silicon Enclave, Indiranagar, Bengaluru, Karnataka 560038\n\n9841 2356 7195\nमेरा आधार, मेरी पहचान",
+            "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nShriyansh Gupta\nS/O: Kailash Kumar Gupta\nDOB: 2005-02-21\nGender: Male / पुरुष\n\nAddress: satyam swaraj tector k bagal se tilak ward no. 1, Katni, Madhya Pradesh - 483501\n\n7940 3824 3465\nमेरा आधार, मेरी पहचान",
         },
         "pan_pass": {
             "name": "sample_pan_card.jpg",
-            "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: RAJESH GUPTA\nDate of Birth: 1998-05-14",
+            "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: KAILASH KUMAR GUPTA\nDate of Birth: 2005-02-21",
         },
         "voter_pass": {
             "name": "sample_voter_id.jpg",
-            "text": "ELECTION COMMISSION OF INDIA\nELECTOR PHOTO IDENTITY CARD\n\nEPIC No: WXH1293847\nName: SHRIYANSH GUPTA\nFather's Name: RAJESH GUPTA\nGender: Male\nDOB: 1998-05-14\nConstituency: Bangalore South",
+            "text": "ELECTION COMMISSION OF INDIA\nELECTOR PHOTO IDENTITY CARD\n\nEPIC No: WXH1293847\nName: SHRIYANSH GUPTA\nFather's Name: KAILASH KUMAR GUPTA\nGender: Male\nDOB: 2005-02-21\nConstituency: Katni Murwara",
         },
         "passport_pass": {
             "name": "sample_passport.jpg",
-            "text": "PASSPORT\nREPUBLIC OF INDIA\nType: P  Country Code: IND  Passport No: Z9182736\nName: GUPTA SHRIYANSH\nNationality: IND\nSex: M\nDate of Birth: 1998-05-14\nExpiry Date: 2032-05-13\n\nP<INDGUPTA<<SHRIYANSH<<<<<<<<<<<<<<<<<<<<<<<\nZ9182736<2IND9805146M3205138<<<<<<<<<<<<<<4",
+            "text": "PASSPORT\nREPUBLIC OF INDIA\nType: P  Country Code: IND  Passport No: Z9182736\nName: GUPTA SHRIYANSH\nNationality: IND\nSex: M\nDate of Birth: 2005-02-21\nExpiry Date: 2035-02-20\n\nP<INDGUPTA<<SHRIYANSH<<<<<<<<<<<<<<<<<<<<<<<\nZ9182736<2IND0502214M3502208<<<<<<<<<<<<<<4",
         },
         "blurry_review": {
             "name": "sample_blurry_scan.png",
-            "text": "GOVERNMENT OF INDIA\nUIDAI AADHAAR\nName: S\nDOB: 1998-05-14\nGender: M\nAddress: [unreadable ink smudge 560038]\nAadhaar: 9841 2356 7195",
+            "text": "GOVERNMENT OF INDIA\nUIDAI AADHAAR\nName: S\nDOB: 2005-02-21\nGender: M\nAddress: [unreadable ink smudge 483501]\nAadhaar: 7940 3824 3465",
         },
         "invalid_fail": {
             "name": "sample_forged_pan.jpg",
@@ -502,27 +502,27 @@ async def process_sample_multi_documents(sample_key: str) -> MultiDocumentVerifi
         "loan_pass": [
             {
                 "name": "primary_pan_card.jpg",
-                "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: RAJESH GUPTA\nDate of Birth: 1998-05-14",
+                "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: KAILASH KUMAR GUPTA\nDate of Birth: 2005-02-21",
             },
             {
                 "name": "secondary_aadhaar_card.pdf",
-                "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nShriyansh Gupta\nDOB: 1998-05-14\nGender: Male / पुरुष\n\nAddress: 42 Silicon Enclave, Indiranagar, Bengaluru, Karnataka 560038\n\n9841 2356 7195\nमेरा आधार, मेरी पहचान",
+                "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nShriyansh Gupta\nS/O: Kailash Kumar Gupta\nDOB: 2005-02-21\nGender: Male / पुरुष\n\nAddress: satyam swaraj tector k bagal se tilak ward no. 1, Katni, Madhya Pradesh - 483501\n\n7940 3824 3465\nमेरा आधार, मेरी पहचान",
             },
         ],
         "loan_review": [
             {
                 "name": "primary_pan_card.jpg",
-                "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: RAJESH GUPTA\nDate of Birth: 1998-05-14",
+                "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: KAILASH KUMAR GUPTA\nDate of Birth: 2005-02-21",
             },
             {
                 "name": "secondary_aadhaar_initials.pdf",
-                "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nS GUPTA\nDOB: 1998-05-14\nGender: Male / पुरुष\n\nAddress: 42 Silicon Enclave, Indiranagar, Bengaluru, Karnataka 560038\n\n9841 2356 7195\nमेरा आधार, मेरी पहचान",
+                "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nS GUPTA\nS/O: Kailash Kumar Gupta\nDOB: 2005-02-21\nGender: Male / पुरुष\n\nAddress: satyam swaraj tector k bagal se tilak ward no. 1, Katni, Madhya Pradesh - 483501\n\n7940 3824 3465\nमेरा आधार, मेरी पहचान",
             },
         ],
         "loan_fail": [
             {
                 "name": "primary_pan_card.jpg",
-                "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: RAJESH GUPTA\nDate of Birth: 1998-05-14",
+                "text": "INCOME TAX DEPARTMENT\nGOVT. OF INDIA\n\nPERMANENT ACCOUNT NUMBER\nABCDE1234F\n\nName: SHRIYANSH GUPTA\nFather's Name: KAILASH KUMAR GUPTA\nDate of Birth: 2005-02-21",
             },
             {
                 "name": "mismatched_aadhaar_card.pdf",

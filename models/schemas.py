@@ -32,6 +32,7 @@ class FieldConfidence(BaseModel):
 class AadhaarFields(BaseModel):
     """Aadhaar Card fields"""
     name: Optional[str] = None
+    fathers_name: Optional[str] = Field(None, description="Father's name or Care Of (S/O, C/O)")
     dob: Optional[str] = Field(None, description="Date in YYYY-MM-DD format")
     gender: Optional[Literal["M", "F", "O"]] = None
     address: Optional[str] = None
@@ -173,6 +174,9 @@ class CrossDocumentConsistency(BaseModel):
     name_similarity: float = 1.0
     name_doc1: Optional[str] = None
     name_doc2: Optional[str] = None
+    fathers_name_match: bool = True
+    fathers_name_doc1: Optional[str] = None
+    fathers_name_doc2: Optional[str] = None
     dob_match: bool = True
     dob_doc1: Optional[str] = None
     dob_doc2: Optional[str] = None

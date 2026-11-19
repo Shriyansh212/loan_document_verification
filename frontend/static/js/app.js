@@ -507,6 +507,24 @@ class KYCStudio {
                         <td><span class="cross-status-badge ${dobBadgeClass}"><i class="fas ${dobMatch ? 'fa-check' : 'fa-xmark'}"></i> ${dobBadgeText}</span></td>
                     `;
                     crossTableBody.appendChild(trDob);
+
+                    // Father's Name Row
+                    if (cross.fathers_name_doc1 || cross.fathers_name_doc2) {
+                        const fn1 = cross.fathers_name_doc1 || 'N/A';
+                        const fn2 = cross.fathers_name_doc2 || 'N/A';
+                        const fnMatch = cross.fathers_name_match !== false;
+                        const fnBadgeClass = fnMatch ? 'cross-status-badge--match' : 'cross-status-badge--partial';
+                        const fnBadgeText = fnMatch ? 'MATCH' : 'REQUIRES REVIEW';
+
+                        const trFn = document.createElement('tr');
+                        trFn.innerHTML = `
+                            <td><strong>Father's Name</strong></td>
+                            <td>${fn1}</td>
+                            <td>${fn2}</td>
+                            <td><span class="cross-status-badge ${fnBadgeClass}"><i class="fas ${fnMatch ? 'fa-check' : 'fa-info-circle'}"></i> ${fnBadgeText}</span></td>
+                        `;
+                        crossTableBody.appendChild(trFn);
+                    }
                 }
             }
 

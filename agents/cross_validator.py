@@ -81,11 +81,15 @@ class CrossValidatorAgent:
         name2 = doc2.fields.get("name", "")
         dob1 = doc1.fields.get("dob", "")
         dob2 = doc2.fields.get("dob", "")
+        fn1 = doc1.fields.get("fathers_name", "")
+        fn2 = doc2.fields.get("fathers_name", "")
 
         consistency.name_doc1 = name1
         consistency.name_doc2 = name2
         consistency.dob_doc1 = dob1
         consistency.dob_doc2 = dob2
+        consistency.fathers_name_doc1 = fn1
+        consistency.fathers_name_doc2 = fn2
 
         # 1. Name cross-check
         if name1 and name2:
