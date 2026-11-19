@@ -1,24 +1,31 @@
 # Document Verification Pipeline — LLM Extraction
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-loan--document--verification.onrender.com-46E3B7.svg?logo=render&logoColor=white)](https://loan-document-verification.onrender.com)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![Groq Llama 3.3](https://img.shields.io/badge/LLM-Groq%20Llama%203.3%2070B-F55036.svg)](https://console.groq.com)
-[![Tesseract OCR](https://img.shields.io/badge/OCR-Tesseract%205.0-blue.svg)](https://github.com/tesseract-ocr/tesseract)
+[![RapidOCR](https://img.shields.io/badge/OCR-RapidOCR%20ONNX-blue.svg)](https://github.com/RapidAI/RapidOCR)
 [![SQLite Audit](https://img.shields.io/badge/Database-SQLite%20(WAL)-003B57.svg?logo=sqlite&logoColor=white)](https://sqlite.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-An end-to-end, production-style identity document verification pipeline that turns messy scanned Indian identity documents into validated structured data, with automated policy routing to **PASS**, **FAIL**, or **MANUAL REVIEW**, supported by a modern interactive web interface and SQL-backed stage audit logs.
+An end-to-end, production-style identity document verification pipeline that turns messy scanned Indian identity documents into validated structured data, with automated policy routing to **PASS**, **FAIL**, or **MANUAL REVIEW**, multi-document loan KYC identity cross-reconciliation, a modern interactive web interface, and SQL-backed stage audit logs.
+
+🌐 **Live Application**: [https://loan-document-verification.onrender.com](https://loan-document-verification.onrender.com)  
+📖 **Interactive API Docs**: [https://loan-document-verification.onrender.com/docs](https://loan-document-verification.onrender.com/docs)
 
 ---
 
 ## 🎯 Key Capabilities & Resume Highlights
 
-- **Multi-Stage Production Pipeline**: Sequential and parallel agent workflow (`OCR` → `LLM Extraction` → `Validation & PII Masking` → `Automated Routing`) turning low-resolution scans into structured JSON.
+- **Multi-Stage Production Pipeline**: Sequential and parallel agent workflow (`OCR` → `LLM Extraction` → `Validation & PII Masking` → `Automated Routing`) turning low-resolution scans and phone photos into structured JSON.
+- **Multi-Document Loan KYC Cross-Reconciliation**: Ingests multiple documents simultaneously (e.g. Primary ID: PAN + Secondary ID: Aadhaar). Cross-reconciles applicant name via token & Levenshtein similarity (detecting initials/abbreviations), verifies DOB equality, cross-checks father's name (`S/O`), and auto-routes loan approval.
+- **Multi-Orientation RapidOCR Engine**: Integrated ONNX-based deep learning OCR engine with automatic 3-way rotation recovery (0°, 90°, 270°) to reliably parse horizontal, vertical, and sideways phone photos with 98%+ character accuracy.
 - **Groq Llama 3.3 Prompt-Based Extraction**: Schema-guided prompts instruct `llama-3.3-70b-versatile` to parse noisy OCR text into strictly formatted fields with field-level confidence scores.
-- **Automated Routing Engine**: Comprehensive Python validation evaluating missing fields, cross-field discrepancies, Luhn/MRZ check digits, and routing files into **PASS**, **FAIL**, or **MANUAL REVIEW**.
+- **Official UIDAI Verhoeff Checksum**: Mathematically verifies 12-digit Indian Aadhaar numbers using the dihedral group $D_5$ Verhoeff algorithm.
+- **Automated Routing Engine**: Comprehensive Python validation evaluating missing fields, cross-field discrepancies, check digits, and routing files into **PASS**, **FAIL**, or **MANUAL REVIEW**.
 - **SQL-Backed Result Storage & Audit Trail**: SQLite database with WAL mode logging microsecond execution times, stage inputs, and stage outputs for full regulatory compliance and debugging traceability.
 - **Mandatory Aadhaar PII Masking**: First 8 digits (`XXXX XXXX 1234`) redacted strictly before any response serialization or storage.
-- **Interactive Web Studio**: Sleek glassmorphism UI featuring live stage-by-stage pipeline visualization, 1-click test presets, document preview, and searchable historical audit table.
+- **Interactive Web Studio**: Sleek glassmorphism UI featuring live stage-by-stage pipeline visualization, 1-click test presets, multi-file document preview, cross-document reconciliation card, and searchable historical audit table.
 
 ---
 
@@ -226,11 +233,53 @@ curl -X POST "http://localhost:8000/api/v1/kyc/process" \
 }
 ```
 
-### 2. Instant 1-Click Sample Test
+### 2. Multi-Document Loan KYC Verification
+`POST /api/v1/kyc/verify-multiple` (Multipart form-data)
+```bash
+curl -X POST "http://localhost:8000/api/v1/kyc/verify-multiple" \
+  -H "accept: application/json" \
+  -F "files=@primary_id_pan.jpg" \
+  -F "files=@secondary_id_aadhaar.pdf"
+```
+
+**Response (`HTTP 200`):**
+```json
+{
+  "batch_id": "batch_20261120_8b2c4e11",
+  "overall_routing_status": "PASS",
+  "cross_match_score": 1.0,
+  "overall_reasons": [
+    "Multi-document loan KYC verification SUCCESS: Identity records reconciled across all documents.",
+    "Name match verified (100%): 'SHRIYANSH GUPTA' ⟷ 'Shriyansh Gupta'",
+    "Date of birth verified: 2005-02-21 matches across both documents",
+    "Father's name verified: 'KAILASH KUMAR GUPTA' ⟷ 'Kailash Kumar Gupta'"
+  ],
+  "cross_consistency": {
+    "name_match": true,
+    "name_similarity": 1.0,
+    "name_doc1": "SHRIYANSH GUPTA",
+    "name_doc2": "Shriyansh Gupta",
+    "fathers_name_match": true,
+    "fathers_name_doc1": "KAILASH KUMAR GUPTA",
+    "fathers_name_doc2": "Kailash Kumar Gupta",
+    "dob_match": true,
+    "dob_doc1": "2005-02-21",
+    "dob_doc2": "2005-02-21"
+  },
+  "documents": [ ... ],
+  "total_processing_time_ms": 612.4
+}
+```
+
+### 3. Interactive Multi-Document Presets
+`POST /api/v1/kyc/sample-multi/{sample_key}`
+- Supported keys: `loan_pass`, `loan_review`, `loan_fail`
+
+### 4. Single-Document Sample Test
 `POST /api/v1/kyc/sample/{sample_key}`
 - Supported sample keys: `aadhaar_pass`, `pan_pass`, `voter_pass`, `passport_pass`, `blurry_review`, `invalid_fail`
 
-### 3. List SQL Verification Records
+### 5. List SQL Verification Records
 `GET /api/v1/kyc/records?status=PASS&limit=20`
 
 ### 4. Fetch Pipeline Analytics
