@@ -391,7 +391,7 @@ async def process_sample_document(sample_key: str) -> ProcessingResult:
     samples = {
         "aadhaar_pass": {
             "name": "sample_aadhaar_clean.png",
-            "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nShriyansh Gupta\nDOB: 1998-05-14\nGender: Male / पुरुष\n\nAddress: 42 Silicon Enclave, Indiranagar, Bengaluru, Karnataka 560038\n\n9841 2356 7192\nमेरा आधार, मेरी पहचान",
+            "text": "GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA\n\nTo,\nShriyansh Gupta\nDOB: 1998-05-14\nGender: Male / पुरुष\n\nAddress: 42 Silicon Enclave, Indiranagar, Bengaluru, Karnataka 560038\n\n9841 2356 7195\nमेरा आधार, मेरी पहचान",
         },
         "pan_pass": {
             "name": "sample_pan_card.jpg",
@@ -407,7 +407,7 @@ async def process_sample_document(sample_key: str) -> ProcessingResult:
         },
         "blurry_review": {
             "name": "sample_blurry_scan.png",
-            "text": "GOVERNMENT OF INDIA\nUIDAI AADHAAR\nName: S. Gupta\nDOB: 1998-05-14\nGender: M\nAddress: [unreadable ink smudge 560038]\nAadhaar: 9841 2356 7192",
+            "text": "GOVERNMENT OF INDIA\nUIDAI AADHAAR\nName: S\nDOB: 1998-05-14\nGender: M\nAddress: [unreadable ink smudge 560038]\nAadhaar: 9841 2356 7195",
         },
         "invalid_fail": {
             "name": "sample_forged_pan.jpg",

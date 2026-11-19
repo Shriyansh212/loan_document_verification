@@ -210,9 +210,9 @@ class ExtractorAgent:
                     break
                 elif "name:" in line.lower():
                     parts = line.split(":", 1)
-                    if len(parts) > 1 and len(parts[1].strip()) >= 2:
+                    if len(parts) > 1 and parts[1].strip():
                         fields["name"] = parts[1].strip()
-                        conf["name"] = 0.92
+                        conf["name"] = 0.60 if len(fields["name"]) < 3 else 0.92
                         break
 
             if "name" not in fields:

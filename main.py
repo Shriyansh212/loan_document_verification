@@ -6,10 +6,11 @@ FastAPI application entry point
 import os
 from contextlib import asynccontextmanager
 import uvicorn
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv(override=True)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(override=True)
+except ImportError:
+    pass
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,13 +59,13 @@ app.include_router(orchestrator_router, prefix="/api/v1/kyc", tags=["KYC Pipelin
 @app.get("/", response_class=HTMLResponse)
 async def frontend(request: Request):
     """Serve the modern interactive frontend"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html")
 
 
 @app.get("/demo", response_class=HTMLResponse)
 async def demo(request: Request):
     """Serve the live demo and document capabilities showcase"""
-    return templates.TemplateResponse("demo.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="demo.html")
 
 
 @app.get("/health")
