@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Verification Pipeline — LLM Extraction | Live Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body class="page">
+    <div class="noise" aria-hidden="true"></div>
+    <div class="glow glow--1" aria-hidden="true"></div>
+    <div class="glow glow--2" aria-hidden="true"></div>
+
+    <!-- Navigation Header -->
+    <header class="nav-bar glass">
+        <div class="nav-bar__inner container-wide">
+            <a href="/" class="brand">
+                <span class="brand__mark"><i class="fas fa-shield-halved"></i></span>
+                <span class="brand__text">
+                    <span class="brand__title">DocuVerify AI</span>
+                    <span class="brand__tag">Production KYC Pipeline</span>
+                </span>
+            </a>
+            <nav class="nav-links">
+                <a href="#studio" class="nav-links__a nav-links__a--active"><i class="fas fa-bolt"></i> Studio</a>
+                <a href="#history-section" class="nav-links__a"><i class="fas fa-database"></i> SQL Records</a>
+                <a href="/demo" class="nav-links__a"><i class="fas fa-id-card"></i> Doc Types</a>
+                <a href="/docs" target="_blank" class="nav-links__a"><i class="fas fa-code"></i> FastAPI Docs</a>
+            </nav>
+            <div class="nav-meta">
+                <span class="pill pill--engine"><i class="fas fa-brain"></i> Groq Llama 3.3</span>
+                <span class="pill pill--db"><i class="fas fa-database"></i> SQLite Active</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main container-wide">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero__copy">
+                <div class="badge-tech-stack">
+                    <span class="tech-tag"><i class="fab fa-python"></i> Python</span>
+                    <span class="tech-tag"><i class="fas fa-bolt"></i> FastAPI</span>
+                    <span class="tech-tag"><i class="fas fa-eye"></i> Tesseract OCR</span>
+                    <span class="tech-tag"><i class="fas fa-microchip"></i> Groq Llama</span>
+                    <span class="tech-tag"><i class="fas fa-database"></i> SQL Audit</span>
+                </div>
+                <h1 class="hero__title">
+                    Document Verification Pipeline <br>
+                    <span class="gradient-text">LLM Extraction & Auto-Routing</span>
+                </h1>
+                <p class="hero__lead">
+                    A multi-stage, production-style pipeline (OCR → LLM extraction → validation → routing) 
+                    that turns messy scanned identity documents into structured fields with automated decision 
+                    routing to <strong>PASS</strong>, <strong>FAIL</strong>, or <strong>MANUAL REVIEW</strong>.
+                </p>
+
+                <!-- Analytics Metrics Bar -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <span class="kpi-val" id="stat-total">0</span>
+                        <span class="kpi-lbl">Total Verified</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-val text-success" id="stat-pass">0%</span>
+                        <span class="kpi-lbl">Auto-Pass Rate</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-val text-warning" id="stat-manual">0%</span>
+                        <span class="kpi-lbl">Manual Review</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-val text-accent" id="stat-latency">0ms</span>
+                        <span class="kpi-lbl">Avg Pipeline Latency</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline Visual Diagram -->
+            <div class="hero__pipeline glass-panel">
+                <p class="panel-label"><i class="fas fa-diagram-project"></i> Multi-Stage Pipeline Architecture</p>
+                <div class="pipeline-flow">
+                    <div class="pipe-node" id="node-stage-1">
+                        <div class="node-icon"><i class="fas fa-file-import"></i></div>
+                        <div class="node-body">
+                            <span class="node-title">1. Ingest</span>
+                            <span class="node-sub">PDF/Image Route</span>
+                        </div>
+                        <span class="node-badge" id="badge-stage-1">Ready</span>
+                    </div>
+                    <div class="pipe-connector"></div>
+                    <div class="pipe-node" id="node-stage-2">
+                        <div class="node-icon"><i class="fas fa-camera"></i></div>
+                        <div class="node-body">
+                            <span class="node-title">2. OCR Engine</span>
+                            <span class="node-sub">Deskew & Binarize</span>
+                        </div>
+                        <span class="node-badge" id="badge-stage-2">Ready</span>
+                    </div>
+                    <div class="pipe-connector"></div>
+                    <div class="pipe-node" id="node-stage-3">
+                        <div class="node-icon"><i class="fas fa-brain"></i></div>
+                        <div class="node-body">
+                            <span class="node-title">3. Groq Llama</span>
+                            <span class="node-sub">Schema Extraction</span>
+                        </div>
+                        <span class="node-badge" id="badge-stage-3">Ready</span>
+                    </div>
+                    <div class="pipe-connector"></div>
+                    <div class="pipe-node" id="node-stage-4">
+                        <div class="node-icon"><i class="fas fa-shield-halved"></i></div>
+                        <div class="node-body">
+                            <span class="node-title">4. Validate ∥ Mask</span>
+                            <span class="node-sub">Luhn & Aadhaar Mask</span>
+                        </div>
+                        <span class="node-badge" id="badge-stage-4">Ready</span>
+                    </div>
+                    <div class="pipe-connector"></div>
+                    <div class="pipe-node" id="node-stage-5">
+                        <div class="node-icon"><i class="fas fa-route"></i></div>
+                        <div class="node-body">
+                            <span class="node-title">5. Auto-Route</span>
+                            <span class="node-sub">PASS / FAIL / REVIEW</span>
+                        </div>
+                        <span class="node-badge" id="badge-stage-5">Ready</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Sample Presets (For Live Recruiter/Demo Testing) -->
+        <section class="samples-preset-bar glass-panel" id="studio">
+            <div class="samples-header">
+                <div>
+                    <h3 class="preset-title"><i class="fas fa-vial"></i> 1-Click Interactive Demo Presets</h3>
+                    <p class="preset-sub">Test the full pipeline instantly without uploading personal files:</p>
+                </div>
+                <span class="pill pill--live"><span class="pill__dot"></span> Instant Evaluation</span>
+            </div>
+            <div class="samples-buttons-grid">
+                <button type="button" class="sample-btn" onclick="runSample('aadhaar_pass')">
+                    <i class="fas fa-id-card text-success"></i>
+                    <div class="sample-btn__info">
+                        <strong>Aadhaar Card</strong>
+                        <span>Auto-Pass · 8-Digit Masking</span>
+                    </div>
+                </button>
+                <button type="button" class="sample-btn" onclick="runSample('pan_pass')">
+                    <i class="fas fa-credit-card text-success"></i>
+                    <div class="sample-btn__info">
+                        <strong>PAN Card</strong>
+                        <span>Auto-Pass · Format Check</span>
+                    </div>
+                </button>
+                <button type="button" class="sample-btn" onclick="runSample('voter_pass')">
+                    <i class="fas fa-check-to-slot text-success"></i>
+                    <div class="sample-btn__info">
+                        <strong>Voter ID</strong>
+                        <span>Auto-Pass · EPIC Regex</span>
+                    </div>
+                </button>
+                <button type="button" class="sample-btn" onclick="runSample('passport_pass')">
+                    <i class="fas fa-passport text-success"></i>
+                    <div class="sample-btn__info">
+                        <strong>Passport</strong>
+                        <span>Auto-Pass · MRZ Checksums</span>
+                    </div>
+                </button>
+                <button type="button" class="sample-btn sample-btn--warn" onclick="runSample('blurry_review')">
+                    <i class="fas fa-triangle-exclamation text-warning"></i>
+                    <div class="sample-btn__info">
+                        <strong>Blurry Scan</strong>
+                        <span>Routes to MANUAL REVIEW</span>
+                    </div>
+                </button>
+                <button type="button" class="sample-btn sample-btn--danger" onclick="runSample('invalid_fail')">
+                    <i class="fas fa-circle-xmark text-danger"></i>
+                    <div class="sample-btn__info">
+                        <strong>Forged ID</strong>
+                        <span>Routes to FAIL</span>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- Main Workspace: Upload & Results -->
+        <section class="workspace">
+            <!-- Upload Panel -->
+            <div class="workspace__upload glass-panel">
+                <div class="panel-head">
+                    <div>
+                        <h2 class="panel-title">Document Ingestion</h2>
+                        <p class="panel-sub">Upload Scanned PDF, PNG, JPG, or TIFF (Max 10 MB)</p>
+                    </div>
+                </div>
+
+                <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Upload document">
+                    <input type="file" id="file-input" class="visually-hidden" accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif">
+                    <div class="drop-zone-content">
+                        <div class="drop-icon-wrap">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                        </div>
+                        <p class="drop-title">Drag & drop your KYC document</p>
+                        <p class="drop-hint">or click anywhere to browse files</p>
+                        <button type="button" class="btn btn-primary" id="btn-browse">
+                            <i class="fas fa-folder-open"></i> Browse File
+                        </button>
+                        <p class="drop-foot">Tip: Click drop zone and paste screenshot directly (<kbd>Ctrl</kbd> + <kbd>V</kbd>)</p>
+                    </div>
+
+                    <div id="file-preview" class="file-preview hidden">
+                        <div class="file-preview__row">
+                            <div class="file-thumb" id="file-thumb"><i class="fas fa-file-invoice"></i></div>
+                            <div class="file-meta">
+                                <div class="file-name" id="file-name">filename.pdf</div>
+                                <div class="file-size" id="file-size">1.2 MB</div>
+                            </div>
+                            <button type="button" class="btn-clear-file" onclick="clearFile()" title="Remove file">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-actions">
+                    <button type="button" class="btn btn-accent btn-glow" id="btn-process" onclick="processDocument()" disabled>
+                        <i class="fas fa-bolt"></i> Run Pipeline Verification
+                    </button>
+                    <button type="button" class="btn btn-ghost" id="btn-reset" onclick="resetForm()">
+                        <i class="fas fa-rotate-left"></i> Reset
+                    </button>
+                </div>
+
+                <div id="progress-container" class="progress-container hidden">
+                    <div class="progress-label">
+                        <span id="progress-step-text">Ingesting document...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="progress-bar-fill" class="progress-bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verification Decision & Results Panel -->
+            <div class="workspace__results glass-panel">
+                <div class="panel-head">
+                    <div>
+                        <h2 class="panel-title">Verification Results</h2>
+                        <p class="panel-sub" id="res-meta-sub">Awaiting document processing...</p>
+                    </div>
+                    <div class="results-actions">
+                        <button type="button" class="btn-icon" id="btn-copy-json" onclick="copyLastResult()" title="Copy JSON" disabled>
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button type="button" class="btn-icon" id="btn-download-json" onclick="downloadLastResult()" title="Download JSON" disabled>
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empty State Placeholder -->
+                <div id="results-empty" class="results-empty">
+                    <div class="empty-icon"><i class="fas fa-shield-halved"></i></div>
+                    <h3>No Active Verification</h3>
+                    <p>Upload an identity document or select a 1-click preset sample above to start the multi-stage extraction pipeline.</p>
+                </div>
+
+                <!-- Results Content Area (Hidden initially) -->
+                <div id="results-content" class="results-content hidden">
+                    <!-- Routing Decision Banner -->
+                    <div id="routing-verdict-banner" class="verdict-banner verdict-pass">
+                        <div class="verdict-header">
+                            <div class="verdict-status-wrap">
+                                <span class="verdict-status" id="routing-status-badge">PASS</span>
+                                <span class="verdict-doc-type" id="routing-doc-type">Aadhaar Card</span>
+                            </div>
+                            <div class="verdict-score-wrap">
+                                <span class="verdict-score-num" id="routing-confidence">98%</span>
+                                <span class="verdict-score-lbl">Confidence</span>
+                            </div>
+                        </div>
+                        <ul class="verdict-reasons" id="routing-reasons-list">
+                            <li>All integrity checksums validated successfully</li>
+                        </ul>
+                    </div>
+
+                    <!-- Navigation Tabs: Fields vs Audit Trail vs Raw JSON -->
+                    <div class="results-tabs">
+                        <button type="button" class="res-tab res-tab--active" id="tab-btn-fields" onclick="switchResultTab('fields')">
+                            <i class="fas fa-table-list"></i> Extracted Fields (<span id="fields-count">0</span>)
+                        </button>
+                        <button type="button" class="res-tab" id="tab-btn-audit" onclick="switchResultTab('audit')">
+                            <i class="fas fa-clock-rotate-left"></i> Stage Audit Trail (<span id="audit-count">0</span>)
+                        </button>
+                        <button type="button" class="res-tab" id="tab-btn-json" onclick="switchResultTab('json')">
+                            <i class="fas fa-code"></i> Raw API JSON
+                        </button>
+                    </div>
+
+                    <!-- Tab 1: Structured Fields Grid -->
+                    <div id="tab-view-fields" class="tab-view">
+                        <div id="masked-security-notice" class="security-notice hidden">
+                            <i class="fas fa-lock text-success"></i>
+                            <span>Mandatory Aadhaar PII masking enforced: First 8 digits redacted prior to serialization.</span>
+                        </div>
+                        <div class="fields-grid" id="fields-grid"></div>
+                    </div>
+
+                    <!-- Tab 2: Stage Audit Trail (Traceability) -->
+                    <div id="tab-view-audit" class="tab-view hidden">
+                        <p class="tab-view-desc">
+                            <i class="fas fa-info-circle"></i> SQL-backed audit logs capturing execution latency, stage inputs, and outputs for debugging and compliance traceability:
+                        </p>
+                        <div class="audit-timeline" id="audit-timeline"></div>
+                    </div>
+
+                    <!-- Tab 3: Raw JSON Viewer -->
+                    <div id="tab-view-json" class="tab-view hidden">
+                        <pre class="json-code-box"><code id="raw-json-code">{}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SQL Database Verification Records Section -->
+        <section class="history-section glass-panel" id="history-section">
+            <div class="history-header">
+                <div>
+                    <h2 class="panel-title"><i class="fas fa-database text-accent"></i> SQL Verification Records</h2>
+                    <p class="panel-sub">Audited historical pipeline runs stored in SQLite database</p>
+                </div>
+                <div class="history-filters">
+                    <select id="filter-status" onchange="loadRecords()" class="select-filter">
+                        <option value="ALL">All Routing Decisions</option>
+                        <option value="PASS">PASS Only</option>
+                        <option value="MANUAL_REVIEW">MANUAL REVIEW Only</option>
+                        <option value="FAIL">FAIL Only</option>
+                    </select>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="loadRecords()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Verification ID</th>
+                            <th>Timestamp</th>
+                            <th>Doc Type</th>
+                            <th>Filename</th>
+                            <th>Routing Decision</th>
+                            <th>Confidence</th>
+                            <th>Latency</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">Loading SQL records...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container-wide footer__inner">
+            <p>
+                <strong>Document Verification Pipeline — LLM Extraction</strong> ·
+                Built with Python, FastAPI, Tesseract OCR, Groq Llama, and SQLite.
+            </p>
+            <p class="footer-links">
+                <a href="/docs" target="_blank"><i class="fas fa-book"></i> Interactive API Docs</a> ·
+                <a href="/health" target="_blank"><i class="fas fa-heart-pulse"></i> Service Health</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
